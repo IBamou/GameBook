@@ -18,7 +18,8 @@ class TableFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'capacity' => fake()->numberBetween(2, 8),
+            'reference' => 'T' . fake()->unique()->numberBetween(1, 100),
         ];
     }
 }
