@@ -62,11 +62,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::get('/reservations', [ReservationController::class, 'index']);
-    Route::post('/reservations/{reservation}/status', [ReservationController::class, 'status'])->name('reservations.status');
+    Route::patch('/reservations/{reservation}/status', [ReservationController::class, 'status'])->name('reservations.status');
 
     Route::controller(ReservationSessionController::class)->prefix('sessions')->group(function () {
         Route::get('/', 'index')->name('sessions.index');
-        Route::post('/create-session', 'create')->name('sessions.create');
         Route::post('/{reservation}/start-session', 'start')->name('sessions.start');
         Route::post('/{reservation}/end-session', 'end')->name('sessions.end');
         Route::post('/{reservation}/update-session-game', 'updateGame')->name('sessions.updateGame');

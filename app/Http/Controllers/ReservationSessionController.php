@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Reservation;
 use App\Models\ReservationSession;
+use App\Models\Table;
+use App\Models\Game;
 use Illuminate\Http\Request;
 
 class ReservationSessionController extends Controller
@@ -12,54 +15,66 @@ class ReservationSessionController extends Controller
      */
     public function index()
     {
-        //
+        $tables = Table::with(['todayReservations' => function ($query) {
+            $query->whereDate('date', today())
+                ->where('status', 'confirmed')
+                ->orderBy('start_time');
+        }])->get();
+        $today = today();
+
+        return view('sessions.index', compact('tables', 'today'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function my()
     {
-        //
+        $sessions = auth()->user()
+            ->reservations()
+            ->whereDate('date', today())
+            ->whereHas('sessions')
+            ->with('sessions')
+            ->get();
+
+        return view('sessions.my', compact('sessions'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function start(Reservation $reservation)
     {
-        //
+        $session = $reservation->sessions()->where('status', 'inactive')->firstOrFail();
+
+        $session->update([
+            'status' => 'active',
+            'started_at' => now(),
+        ]);
+
+        return back();
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ReservationSession $reservationSession)
+    public function end(Reservation $reservation)
     {
-        //
+        $session = $reservation->sessions()->where('status', 'active')->firstOrFail();
+
+        $session->update([
+            'status' => 'ended',
+            'ended_at' => now(),
+        ]);
+
+        return back();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ReservationSession $reservationSession)
+    public function updateGame(Request $request, Reservation $reservation)
     {
-        //
-    }
+        $session = $reservation->sessions()->where('status', 'active')->firstOrFail();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ReservationSession $reservationSession)
-    {
-        //
-    }
+        $session->sessionGames()->where('is_active', true)->update(['is_active' => false]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ReservationSession $reservationSession)
-    {
-        //
+        $game = Game::findOrFail($request->game_id);
+
+        $session->sessionGames()->create([
+            'game_id' => $game->id,
+            'price_at_time' => $game->price,
+            'is_active' => true,
+        ]);
+
+        return back();
     }
 }
