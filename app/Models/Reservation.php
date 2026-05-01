@@ -25,6 +25,11 @@ class Reservation extends Model
         return $this->belongsTo(Table::class);
     }
 
+    public function game(): BelongsTo
+    {
+        return $this->belongsTo(Game::class);
+    }
+
     public function sessions(): HasMany
     {
         return $this->hasMany(ReservationSession::class);
