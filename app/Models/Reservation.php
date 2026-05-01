@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ReservationSession;
+use Carbon\Carbon;
 
 class Reservation extends Model
 {
@@ -26,5 +28,37 @@ class Reservation extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(ReservationSession::class);
+    }
+
+    public function createSessionIfConfirmed(): void
+    {
+        if ($this->status === 'confirmed' && !$this->sessions()->exists()) {
+            $startTime = \Carbon\Carbon::parse($this->start_time);
+            $endTime = \Carbon\Carbon::parse($this->end_time);
+            $duration = $startTime->diffInMinutes($endTime);
+
+            ReservationSession::create([
+                'reservation_id' => $this->id,
+                'duration' => $duration,
+                'status' => 'inactive',
+            ]);
+        }
+    }
+
+    public function cancelSessionIfCancelled(): void
+    {
+        if ($this->status === 'cancelled') {
+            $this->sessions()->delete();
+        }
+    }
+
+    public function isTimeReached(): bool
+    {
+        return Carbon::parse($this->start_time)->isBefore(now());
+    }
+
+    public function isEnded(): bool
+    {
+        return Carbon::parse($this->end_time)->isBefore(now());
     }
 }

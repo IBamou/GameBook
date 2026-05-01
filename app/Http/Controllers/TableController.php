@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Table;
-use Illuminate\Http\Request;
+use App\Http\Requests\TableStoreRequest;
+use App\Http\Requests\TableUpdateRequest;
 
 class TableController extends Controller
 {
@@ -12,7 +13,13 @@ class TableController extends Controller
      */
     public function index()
     {
-        //
+        $tables = Table::with(['todayReservations' => function ($query) {
+            $query->whereDate('date', today())
+                ->where('status', 'confirmed')
+                ->orderBy('start_time');
+        }])->get();
+
+        return view('tables.index', compact('tables'));
     }
 
     /**
@@ -20,15 +27,17 @@ class TableController extends Controller
      */
     public function create()
     {
-        //
+        return view('tables.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TableStoreRequest $request)
     {
-        //
+        Table::create($request->validated());
+
+        return redirect()->route('tables.index');
     }
 
     /**
@@ -36,7 +45,13 @@ class TableController extends Controller
      */
     public function show(Table $table)
     {
-        //
+        $table->load(['todayReservations' => function ($query) {
+            $query->whereDate('date', today())
+                ->where('status', 'confirmed')
+                ->orderBy('start_time');
+        }]);
+
+        return view('tables.show', compact('table'));
     }
 
     /**
@@ -44,15 +59,17 @@ class TableController extends Controller
      */
     public function edit(Table $table)
     {
-        //
+        return view('tables.edit', compact('table'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Table $table)
+    public function update(TableUpdateRequest $request, Table $table)
     {
-        //
+        $table->update($request->validated());
+
+        return redirect()->route('tables.show', $table);
     }
 
     /**
@@ -60,6 +77,8 @@ class TableController extends Controller
      */
     public function destroy(Table $table)
     {
-        //
+        $table->delete();
+
+        return redirect()->route('tables.index');
     }
 }
