@@ -25,7 +25,7 @@ class ReservationSessionController extends Controller
         return view('sessions.index', compact('tables', 'today'));
     }
 
-    public function my()
+    public function mySessions()
     {
         $sessions = auth()->user()
             ->reservations()

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Http\Requests\CategoryStoreRequest;
 use App\Http\Requests\CategoryUpdateRequest;
+use App\Models\Category;
 
 class CategoryController extends Controller
 {
@@ -44,6 +44,7 @@ class CategoryController extends Controller
     public function show(Category $category)
     {
         $games = $category->games();
+
         return view('categories.show', compact('category', 'games'));
     }
 
