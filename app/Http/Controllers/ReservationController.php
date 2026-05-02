@@ -131,4 +131,20 @@ class ReservationController extends Controller
 
         return view('reservations.my', compact('reservations'));
     }
+
+    public function calendar()
+    {
+        $month = request('month', now()->month);
+        $year = request('year', now()->year);
+
+        $startOfMonth = \Carbon\Carbon::createFromDate($year, $month, 1);
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $reservations = Reservation::whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->whereNotIn('status', ['cancelled'])
+            ->with(['user', 'table', 'game'])
+            ->get();
+
+        return view('reservations.calendar', compact('reservations', 'month', 'year', 'startOfMonth'));
+    }
 }
