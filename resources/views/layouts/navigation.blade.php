@@ -36,6 +36,25 @@
                                     </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
+                        <x-dropdown align="left" width="40">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-500 hover:text-slate-700 hover:border-slate-300 focus:outline-none focus:text-slate-700 focus:border-slate-300 transition duration-150 ease-in-out">
+                                    {{ __('Sessions') }}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('sessions.my')">
+                                    {{ __('Mine') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('sessions.index')">
+                                    {{ __('All') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
                     @else
                         <x-nav-link :href="route('reservations.my')" :active="request()->routeIs('reservations.index')">
                             {{ __('My Reservations') }}
