@@ -36,6 +36,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/my', 'mySessions')->name('sessions.my');
     });
 
+    Route::controller(\App\Http\Controllers\WaitlistController::class)->prefix('waitlist')->group(function () {
+        Route::get('/my', 'my')->name('waitlist.my');
+        Route::post('/', 'store')->name('waitlist.store');
+        Route::delete('/{waitlist}', 'destroy')->name('waitlist.delete');
+    });
+
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -66,6 +72,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{reservation}/end-session', 'end')->name('sessions.end');
         Route::post('/{reservation}/update-session-game', 'updateGame')->name('sessions.updateGame');
     });
+
+    Route::get('/waitlist', [\App\Http\Controllers\WaitlistController::class, 'index'])->name('waitlist.index');
 
     Route::controller(TableController::class)->prefix('tables')->group(function () {
         Route::get('/', 'index')->name('tables.index');
