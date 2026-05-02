@@ -438,40 +438,62 @@ function gameSwitcher() {
 <script>
 function gameSwitcher() {
     return {
-        isOpen: false,
-        loading: false,
+        modalOpen: false,
         switching: false,
         reservationId: null,
-        tableRef: '',
         currentGameName: '',
-        currentPrice: null,
+        currentPrice: 0,
         games: [],
         selectedGame: null,
         toast: false,
         toastMessage: '',
+        toastError: '',
 
-        init() {
-            const self = this;
-            window.openGameSwitch = function(reservationId, tableRef) {
-                self.openModal(reservationId, tableRef);
-            };
-        },
-
-        openModal(reservationId, tableRef) {
-            this.reservationId = reservationId;
-            this.tableRef = tableRef;
+        openModal(resId, gameName, price, gameList) {
+            this.reservationId = resId;
+            this.currentGameName = gameName;
+            this.currentPrice = price;
+            this.games = gameList;
             this.selectedGame = null;
-            this.isOpen = true;
-            this.loading = true;
-            
-            fetch(`/sessions/${reservationId}/available-games`)
-                .then(res => res.json())
-                .then(data => {
-                    this.currentGameName = data.current_game || 'None';
-                    this.currentPrice = data.current_price;
-                    this.games = data.games;
-                })
-                .catch(err => console.error(err))
-                .finally(() => this.loading = false);
+            this.modalOpen = true;
+            this.toast = false;
+            this.toastError = '';
         },
+
+        selectGame(game) {
+            this.selectedGame = game;
+        },
+
+        switchGame() {
+            if (!this.selectedGame || this.switching) return;
+            this.switching = true;
+            
+            const form = document.getElementById('switch-form-' + this.reservationId);
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.modalOpen = false;
+                this.showToast(data.message || 'Game switched successfully!');
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(err => {
+                this.toastError = 'Failed to switch game';
+                setTimeout(() => this.toastError = '', 3000);
+                this.switching = false;
+            });
+        },
+
+        showToast(msg) {
+            this.toastMessage = msg;
+            this.toast = true;
+            setTimeout(() => this.toast = false, 4000);
+        }
+    };
+}
+</script>
 @endsection
