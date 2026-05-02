@@ -77,6 +77,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/waitlist', [\App\Http\Controllers\WaitlistController::class, 'index'])->name('waitlist.index');
 
+    Route::get('/export', function() {
+        return view('export.index');
+    })->name('export.index');
+    Route::get('/export/reservations', [\App\Http\Controllers\ExportController::class, 'reservations'])->name('export.reservations');
+    Route::get('/export/sessions', [\App\Http\Controllers\ExportController::class, 'sessions'])->name('export.sessions');
+    Route::get('/export/revenue', [\App\Http\Controllers\ExportController::class, 'revenue'])->name('export.revenue');
+
     Route::controller(TableController::class)->prefix('tables')->group(function () {
         Route::get('/', 'index')->name('tables.index');
         Route::get('/create', 'create')->name('tables.create');
