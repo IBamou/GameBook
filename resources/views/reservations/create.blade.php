@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="py-10 sm:py-12">
@@ -58,6 +58,12 @@
                         @enderror
                     </div>
                 </div>
+
+                @error('time')
+                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                        <span class="font-medium">Conflict Error:</span> {{ $message }}
+                    </div>
+                @enderror
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">

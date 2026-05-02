@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="py-10 sm:py-12">
@@ -14,10 +14,10 @@
             @forelse($tables as $table)
                 @php
                     $table->load('reservations.game', 'reservations.sessions', 'reservations.user');
-                    $todayRes = $table->todayReservations->where('status', 'confirmed');
+                    $todayRes = $table->todayReservations;
                     $currentReservation = null;
                     $currentSession = null;
-                    
+
                     foreach ($todayRes as $res) {
                         if ($res->sessions->where('status', 'active')->isNotEmpty()) {
                             $currentSession = $res->sessions->where('status', 'active')->first();
@@ -25,18 +25,19 @@
                             break;
                         }
                     }
-                    
+
                     if (!$currentReservation) {
                         $currentReservation = $todayRes->first();
                     }
-                    
+
                     $status = $table->status;
                 @endphp
 
                 <div class="card-surface overflow-hidden transition-all duration-200 hover:scale-[1.01] hover:shadow-xl
                     {{ $status === 'in_progress' ? 'ring-2 ring-emerald-500 border-emerald-500' : '' }}
-                    {{ $status === 'ready' ? 'ring-2 ring-amber-500 border-amber-500' : '' }}">
-                    
+                    {{ $status === 'ready' ? 'ring-2 ring-amber-500 border-amber-500' : '' }}"
+                    data-table-id="{{ $table->id }}">
+
                     <!-- Card Header -->
                     <div class="bg-slate-900 px-4 py-3 flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -94,11 +95,11 @@
                                                 <span class="text-sm text-slate-600">Time</span>
                                             </div>
                                             <span class="font-semibold text-slate-900">
-                                                {{ \Carbon\Carbon::parse($currentReservation->start_time)->format('H:i') }} - 
+                                                {{ \Carbon\Carbon::parse($currentReservation->start_time)->format('H:i') }} -
                                                 {{ \Carbon\Carbon::parse($currentReservation->end_time)->format('H:i') }}
                                             </span>
                                         </div>
-                                        
+
                                         <!-- Spots -->
                                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
                                             <div class="flex items-center gap-2">
@@ -109,7 +110,7 @@
                                             </div>
                                             <span class="font-semibold text-slate-900">{{ $currentReservation->spots }}</span>
                                         </div>
-                                        
+
                                         @if($currentReservation->game)
                                         <!-- Game -->
                                         <div class="py-2 border-b border-slate-100">
@@ -123,7 +124,7 @@
                                             <p class="text-xs text-slate-500">{{ $currentReservation->game->duration }} min • {{ $currentReservation->game->price }} MAD</p>
                                         </div>
                                         @endif
-                                        
+
                                         <!-- Customer -->
                                         <div class="py-2">
                                             <div class="flex items-center gap-2 mb-1">
@@ -155,25 +156,31 @@
                             @case('in_progress')
                                 @if($currentSession && $currentReservation)
                                     @php
-                                        $startedAt = \Carbon\Carbon::parse($currentSession->started_at);
-                                        $remainingSeconds = ($currentSession->duration * 60) - $startedAt->diffInSeconds(now());
-                                        if ($remainingSeconds < 0) $remainingSeconds = 0;
+                                        // Use Morocco timezone
+                                        $now = \Carbon\Carbon::now('Africa/Casablanca');
+                                        $startedAt = \Carbon\Carbon::parse($currentSession->started_at, 'Africa/Casablanca');
+                                        $endTime = $startedAt->clone()->addMinutes($currentSession->duration);
+                                        $remainingSeconds = max(0, (int) $now->diffInSeconds($endTime, false));
                                     @endphp
                                     <div class="space-y-4">
                                         <!-- Countdown Timer -->
                                         <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-center">
-                                            <div id="countdown-{{ $table->id }}" class="text-4xl font-bold text-white" data-duration="{{ $remainingSeconds }}">
-                                                {{ gmdate('i:s', $remainingSeconds) }}
+                                            <div id="countdown-{{ $table->id }}"
+                                                class="text-4xl font-bold text-white"
+                                                data-end-time="{{ $endTime->timestamp }}"
+                                                data-started-at="{{ $startedAt }}"
+                                                data-remaining="{{ $remainingSeconds }}">
+                                                {{ floor($remainingSeconds / 60) }}:{{ str_pad($remainingSeconds % 60, 2, '0', STR_PAD_LEFT) }}
                                             </div>
                                             <p class="text-xs text-white/80 mt-1">time remaining</p>
                                         </div>
-                                        
+
                                         <!-- Current Game -->
                                         <div class="py-2">
                                             <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Playing</span>
                                             <p class="font-bold text-slate-900 text-lg">{{ $currentReservation->game->name ?? 'No game selected' }}</p>
                                         </div>
-                                        
+
                                         <!-- Player -->
                                         <div class="py-2">
                                             <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Customer</span>
@@ -217,22 +224,56 @@
     </div>
 </div>
 
+
 @push('scripts')
-<script>
-    document.querySelectorAll('[id^="countdown-"]').forEach(function(el) {
-        let duration = parseInt(el.dataset.duration);
-        
-        setInterval(function() {
-            if (duration > 0) {
-                duration--;
-                let minutes = Math.floor(duration / 60);
-                let seconds = duration % 60;
-                el.textContent = 
-                    (minutes < 10 ? '0' + minutes : minutes) + ':' + 
-                    (seconds < 10 ? '0' + seconds : seconds);
+<script type="module">
+    console.log('✅ Push scripts executed successfully!');
+
+    // ---------------------------------------------------------
+    // No more workarounds needed! Vanilla JS works perfectly
+    // with Laravel Vite as long as you use type="module"
+    // ---------------------------------------------------------
+
+    // Live countdown - use data-remaining
+    setInterval(function() {
+        document.querySelectorAll('[id^="countdown-"]').forEach(function(el) {
+            var remainingSeconds = parseInt(el.getAttribute('data-remaining'));
+
+            if (isNaN(remainingSeconds) || remainingSeconds < 0) {
+                return;
             }
-        }, 1000);
-    });
+
+            if (remainingSeconds === 0) {
+                var tableId = el.id.replace('countdown-', '');
+                var card = el.closest('.card-surface');
+                var endForm = card ? card.querySelector('form[action*="sessions.end"]') : null;
+
+                if (endForm) {
+                    fetch(endForm.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: '_token=' + encodeURIComponent(document.querySelector('meta[name="csrf-token"]').getAttribute('content'))
+                    }).then(function() {
+                        location.reload();
+                    });
+                } else {
+                    location.reload();
+                }
+                return;
+            }
+
+            remainingSeconds--;
+            el.setAttribute('data-remaining', remainingSeconds);
+
+            var mins = Math.floor(remainingSeconds / 60);
+            var secs = remainingSeconds % 60;
+
+            el.textContent = (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+        });
+    }, 1000);
 </script>
 @endpush
 @endsection

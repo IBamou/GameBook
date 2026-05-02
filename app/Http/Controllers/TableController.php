@@ -13,11 +13,7 @@ class TableController extends Controller
      */
     public function index()
     {
-        $tables = Table::with(['todayReservations' => function ($query) {
-            $query->whereDate('date', today())
-                ->where('status', 'confirmed')
-                ->orderBy('start_time');
-        }])->get();
+        $tables = Table::with('todayReservations')->get();
 
         return view('tables.index', compact('tables'));
     }
@@ -45,11 +41,7 @@ class TableController extends Controller
      */
     public function show(Table $table)
     {
-        $table->load(['todayReservations' => function ($query) {
-            $query->whereDate('date', today())
-                ->where('status', 'confirmed')
-                ->orderBy('start_time');
-        }]);
+        $table->load('todayReservations');
 
         return view('tables.show', compact('table'));
     }

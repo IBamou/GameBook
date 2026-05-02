@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{reservation}', 'show')->name('reservations.show');
         Route::get('/{reservation}/edit', 'edit')->name('reservations.edit');
         Route::put('/{reservation}/update', 'update')->name('reservations.update');
-        Route::delete('/{reservation}/delete', 'delete')->name('reservations.delete');
+        Route::delete('/{reservation}/delete', 'destroy')->name('reservations.delete');
     });
 
     Route::controller(ReservationSessionController::class)->prefix('sessions')->group(function () {
@@ -70,6 +70,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', 'index')->name('tables.index');
         Route::get('/create', 'create')->name('tables.create');
         Route::post('/store', 'store')->name('tables.store');
+        Route::get('/{table}', 'show')->name('tables.show');
         Route::get('/{table}/status', 'status')->name('tables.status');
         Route::get('/{table}/edit', 'edit')->name('tables.edit');
         Route::put('/{table}/update', 'update')->name('tables.update');
@@ -82,5 +83,7 @@ Route::get('games/', [GameController::class, 'index'])->name('games.index');
 Route::get('games/{game}', [GameController::class, 'show'])->name('games.show');
 Route::get('categories/', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+
+
 
 require __DIR__.'/auth.php';
