@@ -7,16 +7,28 @@ use App\Http\Requests\ReservationStatusRequest;
 use App\Http\Requests\ReservationStoreRequest;
 use App\Http\Requests\ReservationUpdateRequest;
 use App\Models\Reservation;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $reservations = Reservation::all();
+        $search = $request->get('search');
+        $status = $request->get('status');
+        $date = $request->get('date');
+        $table = $request->get('table');
+
+        $reservations = Reservation::with(['user', 'table', 'game'])
+            ->when($search, fn($q) => $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%")))
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($date, fn($q) => $q->whereDate('date', $date))
+            ->when($table, fn($q) => $q->where('table_id', $table))
+            ->orderBy('date', 'desc')
+            ->orderBy('start_time')
+            ->get();
 
         return view('reservations.index', compact('reservations'));
     }
@@ -130,5 +142,21 @@ class ReservationController extends Controller
         $reservations = auth()->user()->reservations;
 
         return view('reservations.my', compact('reservations'));
+    }
+
+    public function calendar()
+    {
+        $month = request('month', now()->month);
+        $year = request('year', now()->year);
+
+        $startOfMonth = \Carbon\Carbon::createFromDate($year, $month, 1);
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $reservations = Reservation::whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->whereNotIn('status', ['cancelled'])
+            ->with(['user', 'table', 'game'])
+            ->get();
+
+        return view('reservations.calendar', compact('reservations', 'month', 'year', 'startOfMonth'));
     }
 }

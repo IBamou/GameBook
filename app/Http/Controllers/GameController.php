@@ -13,9 +13,19 @@ class GameController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $games = Game::paginate(6);
+        $search = $request->get('search');
+        $category = $request->get('category');
+        $status = $request->get('status');
+
+        $games = Game::with('category')
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($category, fn($q) => $q->where('category_id', $category))
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->paginate(6);
+
+        $games->appends($request->query());
 
         return view('games.index', compact('games'));
     }

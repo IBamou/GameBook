@@ -15,6 +15,17 @@
             @endauth
         </div>
 
+        <form method="GET" class="mb-6 flex gap-3 items-center">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search categories..." 
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+            </div>
+            <button type="submit" class="btn-secondary">Search</button>
+            @if(request('search'))
+                <a href="{{ route('categories.index') }}" class="text-sm text-slate-500 hover:text-slate-700">Clear</a>
+            @endif
+        </form>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($categories as $category)
                 <a href="{{ route('categories.show', $category) }}" class="card-hover group p-6 flex flex-col">

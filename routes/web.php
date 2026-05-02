@@ -57,6 +57,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+    Route::get('/reservations/calendar', [ReservationController::class, 'calendar'])->name('reservations.calendar');
     Route::patch('/reservations/{reservation}/status', [ReservationController::class, 'status'])->name('reservations.status');
 
     Route::controller(ReservationSessionController::class)->prefix('sessions')->group(function () {
