@@ -14,24 +14,58 @@
             @forelse($sessions as $reservation)
                 @if($reservation->sessions->count() > 0)
                     @foreach($reservation->sessions as $session)
-                        <div class="card-surface p-5 flex items-center justify-between">
-                            <div>
-                                <p class="font-semibold text-slate-900">Table {{ $reservation->table->reference }}</p>
-                                <p class="text-sm text-slate-500 mt-1">
-                                    {{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }} • 
-                                    {{ \Carbon\Carbon::parse($session->started_at ?? $reservation->start_time)->format('H:i') }}
-                                    @if($session->duration)
-                                        <span class="ml-2">({{ $session->duration }} min)</span>
-                                    @endif
-                                </p>
+                        @php
+                            $isActive = $session->status === 'active' && $session->started_at;
+                            $remainingSeconds = 0;
+                            $endTime = null;
+                            
+                            if ($isActive) {
+                                $startedAt = \Carbon\Carbon::parse($session->started_at, 'Africa/Casablanca');
+                                $endTime = $startedAt->clone()->addMinutes($session->duration);
+                                $remainingSeconds = max(0, (int) now('Africa/Casablanca')->diffInSeconds($endTime, false));
+                            }
+                        @endphp
+                        <div class="card-surface p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="font-semibold text-slate-900">Table {{ $reservation->table->reference }}</p>
+                                    <p class="text-sm text-slate-500 mt-1">
+                                        {{ \Carbon\Carbon::parse($reservation->date)->format('d/m/Y') }} • 
+                                        {{ \Carbon\Carbon::parse($session->started_at ?? $reservation->start_time)->format('H:i') }}
+                                        @if($session->duration)
+                                            <span class="ml-2">({{ $session->duration }} min)</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                <span class="
+                                    {{ $session->status === 'inactive' ? 'badge-ready' : '' }}
+                                    {{ $session->status === 'active' ? 'badge-in-progress' : '' }}
+                                    {{ $session->status === 'ended' ? 'badge-completed' : '' }}
+                                ">
+                                    {{ $session->status }}
+                                </span>
                             </div>
-                            <span class="
-                                {{ $session->status === 'inactive' ? 'badge-ready' : '' }}
-                                {{ $session->status === 'active' ? 'badge-in-progress' : '' }}
-                                {{ $session->status === 'ended' ? 'badge-completed' : '' }}
-                            ">
-                                {{ $session->status }}
-                            </span>
+
+                            @if($isActive)
+                                @php
+                                    $currentGame = $session->currentGame ?? $reservation->game;
+                                @endphp
+                                @if($currentGame)
+                                    <div class="flex items-center justify-between text-sm mb-3">
+                                        <span class="text-slate-500">Playing:</span>
+                                        <span class="font-semibold text-slate-900">{{ $currentGame->name }}</span>
+                                    </div>
+                                @endif
+                                <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg p-4 text-center">
+                                    <div id="countdown-user-{{ $session->id }}"
+                                        class="text-3xl font-bold text-white countdown-timer"
+                                        data-end-time="{{ $endTime->timestamp }}"
+                                        data-remaining="{{ $remainingSeconds }}">
+                                        {{ floor($remainingSeconds / 60) }}:{{ str_pad($remainingSeconds % 60, 2, '0', STR_PAD_LEFT) }}
+                                    </div>
+                                    <p class="text-xs text-white/80 mt-1">Time remaining</p>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 @endif
@@ -46,4 +80,29 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script type="module">
+    setInterval(function() {
+        document.querySelectorAll('.countdown-timer').forEach(function(el) {
+            var remainingSeconds = parseInt(el.getAttribute('data-remaining'));
+            
+            if (isNaN(remainingSeconds) || remainingSeconds < 0) return;
+            
+            if (remainingSeconds === 0) {
+                location.reload();
+                return;
+            }
+            
+            remainingSeconds--;
+            el.setAttribute('data-remaining', remainingSeconds);
+            
+            var mins = Math.floor(remainingSeconds / 60);
+            var secs = remainingSeconds % 60;
+            
+            el.textContent = (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+        });
+    }, 1000);
+</script>
+@endpush
 @endsection

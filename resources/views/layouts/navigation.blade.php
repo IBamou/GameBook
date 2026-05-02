@@ -2,12 +2,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="{{ url('/') }}" class="text-lg font-semibold tracking-tight text-slate-900">AJI L3bou</a>
+                <a href="{{ url('/') }}" class="text-lg font-semibold tracking-tight text-slate-900">GameBook</a>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:gap-1">
+            <div class="hidden sm:flex sm:items-center sm:gap-3">
                 <x-nav-link :href="url('/')" :active="request()->is('/')">
                     {{ __('Home') }}
+                </x-nav-link>
+                <x-nav-link :href="route('dashboard')" :active="request()->is('dashboard')">
+                    {{ __('Dashboard') }}
                 </x-nav-link>
                 <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                     {{ __('Categories') }}
@@ -17,48 +20,44 @@
                 </x-nav-link>
                 @auth
                     @can('admin')
-                        <div class="ml-4">
-                            <x-dropdown align="left" width="40">
-                                <x-slot name="trigger">
-                                    <button
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-sky-600 rounded-md transition-colors">
-                                        {{ __('Reservations') }}
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('reservations.my')">
-                                        {{ __('Mine') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('reservations.index')">
+                        <x-dropdown align="left" width="40">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-500 hover:text-slate-700 hover:border-slate-300 focus:outline-none focus:text-slate-700 focus:border-slate-300 transition duration-150 ease-in-out">
+                                    {{ __('Reservations') }}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('reservations.my')">
+                                    {{ __('Mine') }}
+                                </x-dropdown-link>
+<x-dropdown-link :href="route('reservations.index')">
                                         {{ __('All') }}
                                     </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
-                        </div>
-                        <div>
-                            <x-dropdown align="left" width="40">
-                                <x-slot name="trigger">
-                                    <button
-                                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-sky-600 rounded-md transition-colors">
-                                        {{ __('Sessions') }}
-                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                        </svg>
-                                    </button>
-                                </x-slot>
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('sessions.my')">
-                                        {{ __('Mine') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('sessions.index')">
-                                        {{ __('All') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
+                        <x-dropdown align="left" width="40">
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-500 hover:text-slate-700 hover:border-slate-300 focus:outline-none focus:text-slate-700 focus:border-slate-300 transition duration-150 ease-in-out">
+                                    {{ __('Sessions') }}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+                            </x-slot>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('sessions.my')">
+                                    {{ __('Mine') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('sessions.index')">
+                                    {{ __('All') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
                     @else
                         <x-nav-link :href="route('reservations.my')" :active="request()->routeIs('reservations.index')">
                             {{ __('My Reservations') }}
