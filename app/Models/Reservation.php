@@ -40,8 +40,13 @@ class Reservation extends Model
     public function createSessionIfConfirmed(): void
     {
         if ($this->status === 'confirmed' && !$this->sessions()->exists()) {
-            $startTime = \Carbon\Carbon::parse($this->start_time);
-            $endTime = \Carbon\Carbon::parse($this->end_time);
+            $startTime = \Carbon\Carbon::parse($this->date . ' ' . $this->start_time);
+            $endTime = \Carbon\Carbon::parse($this->date . ' ' . $this->end_time);
+            
+            if ($endTime->isBefore($startTime)) {
+                $endTime->addDay();
+            }
+            
             $duration = $startTime->diffInMinutes($endTime);
 
             ReservationSession::create([
@@ -61,11 +66,18 @@ class Reservation extends Model
 
     public function isTimeReached(): bool
     {
-        return Carbon::parse($this->start_time)->isBefore(now());
+        return Carbon::parse($this->date . ' ' . $this->start_time)->isBefore(now());
     }
 
     public function isEnded(): bool
     {
-        return Carbon::parse($this->end_time)->isBefore(now());
+        $startTime = Carbon::parse($this->date . ' ' . $this->start_time);
+        $endTime = Carbon::parse($this->date . ' ' . $this->end_time);
+        
+        if ($endTime->isBefore($startTime)) {
+            $endTime->addDay();
+        }
+        
+        return $endTime->isBefore(now());
     }
 }

@@ -30,4 +30,51 @@ public function authorize(): bool
             'spots' => 'sometimes|required|integer|min:1',
         ];
     }
+
+    public function after(): array
+    {
+        return [
+            function ($validator) {
+                // Use input values or fallback to the existing reservation values
+                $reservation = $this->route('reservation');
+                $tableId = $this->input('table_id', $reservation?->table_id);
+                $date = $this->input('date', $reservation?->date);
+                $startTime = $this->input('start_time', $reservation?->start_time);
+                $endTime = $this->input('end_time', $reservation?->end_time);
+
+                if ($tableId && $date && $startTime && $endTime) {
+                    $conflict = \App\Models\Reservation::where('table_id', $tableId)
+                        ->where('date', $date)
+                        ->whereNotIn('status', ['cancelled'])
+                        ->when($reservation, function ($query) use ($reservation) {
+                            $query->where('id', '!=', $reservation->id);
+                        })
+                        ->where(function ($query) use ($startTime, $endTime) {
+                            $query->whereTime('start_time', '<', $endTime)
+                                  ->whereTime('end_time', '>', $startTime);
+                        })
+                        ->exists();
+
+                    if ($conflict) {
+                        $validator->errors()->add('time', 'This table is already reserved during the requested time slot.');
+                    }
+
+                    $hasActiveSession = \App\Models\Reservation::where('table_id', $tableId)
+                        ->where('date', $date)
+                        ->where('status', 'confirmed')
+                        ->when($reservation, function ($query) use ($reservation) {
+                            $query->where('id', '!=', $reservation->id);
+                        })
+                        ->whereHas('sessions', function ($q) {
+                            $q->where('status', 'active');
+                        })
+                        ->exists();
+
+                    if ($hasActiveSession) {
+                        $validator->errors()->add('time', 'This table is currently in use. Please choose another time slot.');
+                    }
+                }
+            }
+        ];
+    }
 }

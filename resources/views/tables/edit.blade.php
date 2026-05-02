@@ -1,26 +1,41 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Edit Table</h1>
+<div class="py-10 sm:py-12">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-950">Edit Table</h1>
+            <p class="mt-2 text-slate-600">Update table information</p>
+        </div>
 
-        <form action="{{ route('tables.update', $table) }}" method="POST" class="max-w-md">
-            @csrf
-            @method('PUT')
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Reference</label>
-                <input type="text" name="reference" value="{{ $table->reference }}" class="w-full border rounded-lg px-4 py-2" required>
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Capacity</label>
-                <input type="number" name="capacity" value="{{ $table->capacity }}" class="w-full border rounded-lg px-4 py-2" min="1" required>
-            </div>
-            <div class="flex gap-4">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Update</button>
-                <a href="{{ route('tables.index') }}" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">Cancel</a>
-            </div>
-        </form>
+        <div class="card-surface p-8">
+            <form action="{{ route('tables.update', $table) }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                <div class="form-group">
+                    <label class="form-label">Table Reference *</label>
+                    <input type="text" name="reference" class="form-input" value="{{ old('reference', $table->reference) }}" required>
+                    @error('reference') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Seating Capacity *</label>
+                    <input type="number" name="capacity" class="form-input" value="{{ old('capacity', $table->capacity) }}" min="2" required>
+                    @error('capacity') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn-primary flex-1">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Update Table
+                    </button>
+                    <a href="{{ route('tables.show', $table) }}" class="btn-secondary flex-1">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

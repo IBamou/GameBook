@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TableStatusChanged;
 use App\Http\Requests\ReservationStatusRequest;
 use App\Http\Requests\ReservationStoreRequest;
 use App\Http\Requests\ReservationUpdateRequest;
@@ -25,10 +26,25 @@ class ReservationController extends Controller
      */
     public function status(ReservationStatusRequest $request, Reservation $reservation)
     {
+        $oldStatus = $reservation->status;
         $newStatus = $request->validated()['status'];
         $reservation->update(['status' => $newStatus]);
         $reservation->createSessionIfConfirmed();
         $reservation->cancelSessionIfCancelled();
+
+        if ($oldStatus !== $newStatus) {
+            $status = match ($newStatus) {
+                'confirmed' => 'booked',
+                'cancelled' => 'available',
+                default => $newStatus,
+            };
+
+            event(new TableStatusChanged(
+                $reservation->table_id,
+                $status,
+                ['reservation_id' => $reservation->id]
+            ));
+        }
 
         return back();
     }
@@ -49,7 +65,19 @@ class ReservationController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
-        Reservation::create($data);
+        $reservation = Reservation::create($data);
+
+        if ($reservation->status === 'confirmed') {
+            event(new TableStatusChanged(
+                $reservation->table_id,
+                'booked',
+                [
+                    'reservation_id' => $reservation->id,
+                    'starts_at' => $reservation->start_time,
+                    'ends_at' => $reservation->end_time,
+                ]
+            ));
+        }
 
         return redirect()->route('reservations.my');
     }
@@ -85,7 +113,14 @@ class ReservationController extends Controller
      */
     public function destroy(Reservation $reservation)
     {
+        $tableId = $reservation->table_id;
         $reservation->delete();
+
+        event(new TableStatusChanged(
+            $tableId,
+            'available',
+            ['reservation_id' => null]
+        ));
 
         return redirect()->route('reservations.my');
     }

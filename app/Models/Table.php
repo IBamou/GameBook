@@ -21,14 +21,17 @@ class Table extends Model
 
     public function todayReservations()
     {
-        return $this->reservations()->whereDate('date', today());
+        return $this->reservations()
+            ->whereDate('date', today())
+            ->where('status', 'confirmed')
+            ->orderBy('start_time');
     }
 
     public function getTodayReservationAttribute()
     {
         return $this->todayReservations()
             ->where('status', 'confirmed')
-            ->whereTime('start_time', '>', now())
+            ->whereTime('end_time', '>', now())
             ->orderBy('start_time')
             ->first();
     }
@@ -51,7 +54,7 @@ class Table extends Model
 
         // Case 2: Time reached - ready to start
         $nextReservation = $this->todayReservation;
-        if ($nextReservation && Carbon::parse($nextReservation->start_time)->isBefore(now())) {
+        if ($nextReservation && Carbon::parse($nextReservation->date . ' ' . $nextReservation->start_time)->isBefore(now())) {
             return 'ready';
         }
 
