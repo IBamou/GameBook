@@ -89,6 +89,11 @@
                         </x-slot>
 
                         <x-slot name="content">
+                            @can('admin')
+                                <x-dropdown-link :href="route('settings.index')">
+                                    {{ __('Settings') }}
+                                </x-dropdown-link>
+                            @endcan
                             <x-dropdown-link :href="route('profile.edit')">
                                 {{ __('Profile') }}
                             </x-dropdown-link>

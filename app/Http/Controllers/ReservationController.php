@@ -76,6 +76,12 @@ class ReservationController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = auth()->id();
+        
+        // Check auto-confirm setting
+        $autoConfirm = \App\Models\Setting::where('key', 'auto_confirm_reservation')->value('value') ?? '0';
+        if ($autoConfirm === '1') {
+            $data['status'] = 'confirmed';
+        }
 
         $reservation = Reservation::create($data);
 

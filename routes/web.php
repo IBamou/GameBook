@@ -77,6 +77,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/waitlist', [\App\Http\Controllers\WaitlistController::class, 'index'])->name('waitlist.index');
 
+    Route::get('/settings', [\App\Http\Controllers\SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [\App\Http\Controllers\SettingsController::class, 'update'])->name('settings.update');
+
     Route::get('/export', function() {
         return view('export.index');
     })->name('export.index');
