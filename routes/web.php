@@ -42,6 +42,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{waitlist}', 'destroy')->name('waitlist.delete');
     });
 
+    Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -90,6 +92,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 Route::get('games/', [GameController::class, 'index'])->name('games.index');
 Route::get('games/{game}', [GameController::class, 'show'])->name('games.show');
+Route::get('games/{game}/reviews', [\App\Http\Controllers\ReviewController::class, 'gameReviews'])->name('games.reviews');
 Route::get('categories/', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
