@@ -24,25 +24,25 @@
                             <h3 class="font-semibold text-slate-950 group-hover:text-sky-600 transition-colors">Table {{ $reservation->table->reference }}</h3>
                             <p class="text-sm text-slate-500 mt-1">{{ \Carbon\Carbon::parse($reservation->date)->format('d M Y') }}</p>
                         </div>
-                        <div class="hidden sm:block px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                        <div class="hidden sm:block min-w-[110px] px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
                             <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Time</p>
-                            <p class="font-semibold text-slate-900">
+                            <p class="font-semibold text-slate-900 text-sm">
                                 {{ \Carbon\Carbon::parse($reservation->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservation->end_time)->format('H:i') }}
                             </p>
                         </div>
                         @if($reservation->game)
-                            <div class="hidden lg:block px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                            <div class="hidden lg:block min-w-[110px] px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
                                 <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Game</p>
-                                <p class="font-semibold text-slate-900">{{ $reservation->game->name }}</p>
+                                <p class="font-semibold text-slate-900 text-sm truncate">{{ $reservation->game->name }}</p>
                             </div>
                         @endif
                     </div>
                     <div class="flex items-center gap-4 ml-4 flex-shrink-0">
-                        <span class="
-                            {{ $reservation->status === 'confirmed' ? 'badge-confirmed' : '' }}
-                            {{ $reservation->status === 'pending' ? 'badge-pending' : '' }}
-                            {{ $reservation->status === 'cancelled' ? 'badge-cancelled' : '' }}
-                            {{ $reservation->status === 'completed' ? 'badge-completed' : '' }}
+                        <span class="px-3 py-1.5 rounded-full text-xs font-semibold text-center min-w-[90px] 
+                            {{ $reservation->status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' : '' }}
+                            {{ $reservation->status === 'pending' ? 'bg-amber-100 text-amber-700' : '' }}
+                            {{ $reservation->status === 'cancelled' ? 'bg-red-100 text-red-700' : '' }}
+                            {{ $reservation->status === 'completed' ? 'bg-slate-100 text-slate-700' : '' }}
                         ">
                             {{ ucfirst($reservation->status) }}
                         </span>

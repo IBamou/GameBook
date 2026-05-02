@@ -2,12 +2,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="{{ url('/') }}" class="text-lg font-semibold tracking-tight text-slate-900">AJI L3bou</a>
+                <a href="{{ url('/') }}" class="text-lg font-semibold tracking-tight text-slate-900">GameBook</a>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:gap-1">
+            <div class="hidden sm:flex sm:items-center sm:gap-3">
                 <x-nav-link :href="url('/')" :active="request()->is('/')">
                     {{ __('Home') }}
+                </x-nav-link>
+                <x-nav-link :href="route('dashboard')" :active="request()->is('dashboard')">
+                    {{ __('Dashboard') }}
                 </x-nav-link>
                 <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                     {{ __('Categories') }}
