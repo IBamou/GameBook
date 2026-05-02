@@ -11,8 +11,8 @@
             @auth
                 @if(auth()->user()->role === 'admin')
                 <div class="flex gap-2">
-                    <a href="{{ route('games.edit', $game) }}" class="btn-secondary">Edit</a>
-                    <form action="{{ route('games.delete', $game) }}" method="POST" onsubmit="return confirm('Delete this game?')" class="inline">
+                    <a href="" class="btn-secondary">Edit</a>
+                    <form action="" method="POST" onsubmit="return confirm('Delete this game?')" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-secondary text-red-600 hover:bg-red-50">Delete</button>
@@ -47,7 +47,7 @@
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</p>
                         <p class="mt-2 text-lg font-semibold text-slate-900">{{ $game->category->name ?? 'Uncategorized' }}</p>
                     </div>
-                    
+
                     <div class="border-t border-slate-200 pt-6">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Difficulty Level</p>
                         <p class="mt-2 text-lg font-semibold text-slate-900 capitalize">{{ $game->difficulty }}</p>
@@ -75,8 +75,7 @@
                             {{ ucfirst($game->status) }}
                         </span>
                     </div>
-
-                    <a href="{{ route('reservations.create') }}" class="btn-primary w-full">
+                    <a href="{{ route('reservations.create') }}?game={{ $game->id }}" class="btn-primary w-full">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>

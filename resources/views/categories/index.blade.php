@@ -34,6 +34,10 @@
                 </div>
             @endforelse
         </div>
+
+        <div class="mt-8">
+            {{ $categories->links() }}
+        </div>
     </div>
 </div>
 @endsection

@@ -17,7 +17,7 @@
                     <select name="table_id" class="form-input" required>
                         <option value="">Select a table</option>
                         @foreach(\App\Models\Table::all() as $table)
-                            <option value="{{ $table->id }}" @selected(old('table_id') == $table->id)>
+                            <option value="{{ $table->id }}" @selected(old('table_id') == $table->id || request('tab') == $table->id)>
                                 {{ $table->reference }} — {{ $table->capacity }} seats
                             </option>
                         @endforeach
@@ -32,7 +32,7 @@
                     <select name="game_id" class="form-input">
                         <option value="">Choose a game</option>
                         @foreach(\App\Models\Game::where('status', 'available')->get() as $game)
-                            <option value="{{ $game->id }}" @selected(old('game_id') == $game->id)>
+                            <option value="{{ $game->id }}"  @selected((request('game') !== null ?  request('game') == $game->id : old('game_id') == $game->id ))>
                                 {{ $game->name }} — {{ number_format($game->price, 2) }} MAD
                             </option>
                         @endforeach

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="py-10 sm:py-12">
@@ -48,6 +48,7 @@
                                 @if($reservation->status === 'pending')
                                     <form action="{{ route('reservations.status', $reservation) }}" method="POST" class="inline ml-4">
                                         @csrf
+                                        @method('PATCH')
                                         <input type="hidden" name="status" value="confirmed">
                                         <button type="submit" class="text-emerald-600 hover:text-emerald-700 font-medium">Confirm</button>
                                     </form>
