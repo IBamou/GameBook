@@ -73,6 +73,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/{reservation}/start-session', 'start')->name('sessions.start');
         Route::post('/{reservation}/end-session', 'end')->name('sessions.end');
         Route::post('/{reservation}/update-session-game', 'updateGame')->name('sessions.updateGame');
+        Route::get('/{reservation}/available-games', 'availableGames')->name('sessions.availableGames');
     });
 
     Route::get('/waitlist', [\App\Http\Controllers\WaitlistController::class, 'index'])->name('waitlist.index');

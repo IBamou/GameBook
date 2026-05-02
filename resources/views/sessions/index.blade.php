@@ -1,12 +1,69 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-10 sm:py-12">
+<div x-data="gameSwitcher()" class="py-10 sm:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-header">
             <div class="section-title">
                 <h1>Session Management</h1>
                 <p>{{ \Carbon\Carbon::parse($today)->format('l, F j, Y') }}</p>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div x-show="toast" x-transition class="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span x-text="toastMessage"></span>
+        </div>
+        <div x-show="toastError" x-transition class="fixed top-5 right-5 z-50 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <span x-text="toastError"></span>
+        </div>
+
+        <!-- Game Switch Modal -->
+        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div x-show="modalOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="modalOpen = false"></div>
+            <div x-show="modalOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="p-5 border-b border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-slate-900">Switch Game</h2>
+                        <button @click="modalOpen = false" class="text-slate-400 hover:text-slate-600 p-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="mt-3 p-3 bg-slate-50 rounded-lg flex items-center justify-between text-sm">
+                        <span class="text-slate-600">Current:</span>
+                        <span class="font-semibold text-slate-900" x-text="currentGameName"></span>
+                        <span class="text-slate-400" x-text="currentPrice ? currentPrice + ' MAD' : ''"></span>
+                    </div>
+                </div>
+                <div class="p-5 max-h-80 overflow-y-auto">
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="game in games" :key="game.id">
+                            <div class="border-2 rounded-xl p-3 cursor-pointer transition-all"
+                                :class="selectedGame?.id === game.id ? 'border-sky-500 bg-sky-50' : (game.available ? 'border-slate-200 hover:border-slate-300' : 'border-slate-100 opacity-50')"
+                                @click="game.available ? selectGame(game) : null">
+                                <div class="h-16 bg-slate-100 rounded-lg mb-2 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4"/></svg>
+                                </div>
+                                <p class="font-semibold text-slate-900 text-sm" x-text="game.name"></p>
+                                <p class="text-xs text-slate-500" x-text="game.price + ' MAD'"></p>
+                                <p x-show="!game.available" class="text-xs text-red-500 mt-1">Unavailable</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div x-show="selectedGame" x-transition class="p-5 border-t border-slate-100 bg-slate-50">
+                    <div class="flex items-center justify-between mb-4 text-sm">
+                        <span class="text-slate-600">Price difference:</span>
+                        <span x-show="selectedGame.priceDiff > 0" class="text-red-600 font-semibold" x-text="'+' + selectedGame.priceDiff + ' MAD extra'"></span>
+                        <span x-show="selectedGame.priceDiff <= 0" class="text-emerald-600 font-semibold">No extra charge</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <button @click="modalOpen = false" class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm">Cancel</button>
+                        <button @click="switchGame()" :disabled="switching" class="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 font-medium text-sm disabled:opacity-50" x-text="switching ? 'Switching...' : 'Confirm Switch'"></button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -175,10 +232,58 @@
                                             <p class="text-xs text-white/80 mt-1">time remaining</p>
                                         </div>
 
-                                        <!-- Current Game -->
+                                        <!-- Current Game with Switch -->
+                                        @php
+                                            $currentGame = $currentSession->currentGame ?? $currentReservation->game;
+                                            $currentPrice = $currentGame?->price ?? 0;
+                                            $switchGames = \App\Models\Game::whereIn('status', ['available', 'busy'])
+                                                ->where('id', '!=', $currentSession->current_game_id ?? 0)
+                                                ->get()
+                                                ->map(function($g) use ($currentPrice, $currentReservation, $currentSession) {
+                                                    $startedAt = \Carbon\Carbon::parse($currentSession->started_at);
+                                                    $sessionEnd = $startedAt->copy()->addMinutes($currentSession->duration);
+                                                    $conflict = \App\Models\ReservationSession::where('id', '!=', $currentSession->id)
+                                                        ->where('current_game_id', $g->id)
+                                                        ->whereNotIn('status', ['ended', 'cancelled'])
+                                                        ->whereHas('reservation', function($q) use ($currentReservation, $sessionEnd, $startedAt) {
+                                                            $q->where('date', $currentReservation->date)
+                                                              ->where('start_time', '<', $sessionEnd->format('H:i:s'))
+                                                              ->where('end_time', '>', $startedAt->format('H:i:s'));
+                                                        })->exists();
+                                                    return ['id' => $g->id, 'name' => $g->name, 'price' => $g->price, 'available' => !$conflict, 'priceDiff' => $g->price - $currentPrice];
+                                                });
+                                        @endphp
                                         <div class="py-2">
                                             <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Playing</span>
-                                            <p class="font-bold text-slate-900 text-lg">{{ $currentReservation->game->name ?? 'No game selected' }}</p>
+                                            <div class="flex items-center justify-between mt-1">
+                                                <div class="flex items-center gap-2">
+                                                    <span>🎲</span>
+                                                    <span class="font-bold text-slate-900">{{ $currentGame?->name ?? 'No game' }}</span>
+                                                </div>
+                                                <button type="button" 
+                                                    @click="openModal({{ $currentReservation->id }}, '{{ $currentGame?->name ?? 'None' }}', {{ $currentPrice }}, {{ json_encode($switchGames) }})"
+                                                    class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium hover:bg-amber-200 flex items-center gap-1">
+                                                    <span>⚡</span> Switch
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden form for switch (used by modal) -->
+                                        <form id="switch-form-{{ $currentReservation->id }}" action="{{ route('sessions.updateGame', $currentReservation) }}" method="POST" class="hidden">
+                                            @csrf
+                                            <input type="hidden" name="game_id" :value="selectedGame?.id">
+                                        </form>
+                                        @if(false)
+                                        <form action="{{ route('sessions.updateGame', $currentReservation) }}" method="POST" class="flex-1">
+                                            @csrf
+                                            <select name="game_id" onchange="this.form.submit()" class="text-xs border border-slate-300 rounded px-1 py-0.5 bg-white">
+                                                <option value="">⚡ Switch</option>
+                                                @foreach($switchGames as $game)
+                                                    <option value="{{ $game->id }}">{{ $game->name }} ({{ $game->price }} MAD)</option>
+                                                @endforeach
+                                                    </select>
+                                                </form>
+                                                @endif
+                                            </div>
                                         </div>
 
                                         <!-- Player -->
@@ -189,12 +294,6 @@
 
                                         <!-- Action Buttons -->
                                         <div class="flex gap-2 mt-4">
-                                            <button class="btn-sm-secondary flex-1">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m2-2l2.828-2.828a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                </svg>
-                                                Game
-                                            </button>
                                             <form action="{{ route('sessions.end', $currentReservation) }}" method="POST" class="flex-1">
                                                 @csrf
                                                 <button type="submit" class="btn-sm-danger w-full flex items-center justify-center gap-1">
@@ -224,8 +323,68 @@
     </div>
 </div>
 
+<script>
+function gameSwitcher() {
+    return {
+        modalOpen: false,
+        reservationId: null,
+        currentGameName: '',
+        currentPrice: 0,
+        games: [],
+        selectedGame: null,
+        switching: false,
+        toast: false,
+        toastMessage: '',
+        toastError: '',
 
-@push('scripts')
+        openModal(resId, gameName, price, gameList) {
+            this.reservationId = resId;
+            this.currentGameName = gameName;
+            this.currentPrice = price;
+            this.games = gameList;
+            this.selectedGame = null;
+            this.modalOpen = true;
+            this.toast = false;
+            this.toastError = '';
+        },
+
+        selectGame(game) {
+            this.selectedGame = game;
+        },
+
+        switchGame() {
+            if (!this.selectedGame || this.switching) return;
+            this.switching = true;
+            
+            const form = document.getElementById('switch-form-' + this.reservationId);
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.modalOpen = false;
+                this.showToast(data.message || 'Game switched successfully!');
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(err => {
+                this.toastError = 'Failed to switch game';
+                setTimeout(() => this.toastError = '', 3000);
+                this.switching = false;
+            });
+        },
+
+        showToast(msg) {
+            this.toastMessage = msg;
+            this.toast = true;
+            setTimeout(() => this.toast = false, 4000);
+        }
+    };
+}
+</script>
+
 <script type="module">
     console.log('✅ Push scripts executed successfully!');
 
@@ -275,5 +434,44 @@
         });
     }, 1000);
 </script>
-@endpush
+
+<script>
+function gameSwitcher() {
+    return {
+        isOpen: false,
+        loading: false,
+        switching: false,
+        reservationId: null,
+        tableRef: '',
+        currentGameName: '',
+        currentPrice: null,
+        games: [],
+        selectedGame: null,
+        toast: false,
+        toastMessage: '',
+
+        init() {
+            const self = this;
+            window.openGameSwitch = function(reservationId, tableRef) {
+                self.openModal(reservationId, tableRef);
+            };
+        },
+
+        openModal(reservationId, tableRef) {
+            this.reservationId = reservationId;
+            this.tableRef = tableRef;
+            this.selectedGame = null;
+            this.isOpen = true;
+            this.loading = true;
+            
+            fetch(`/sessions/${reservationId}/available-games`)
+                .then(res => res.json())
+                .then(data => {
+                    this.currentGameName = data.current_game || 'None';
+                    this.currentPrice = data.current_price;
+                    this.games = data.games;
+                })
+                .catch(err => console.error(err))
+                .finally(() => this.loading = false);
+        },
 @endsection

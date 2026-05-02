@@ -117,15 +117,16 @@ class ReservationSessionController extends Controller
         $oldGameId = $session->current_game_id;
 
         // 1. Validation: Is the new game available? (Check overlapping sessions)
-        $sessionEnd = $session->started_at->copy()->addMinutes($session->duration);
+        $startedAt = \Carbon\Carbon::parse($session->started_at);
+        $sessionEnd = $startedAt->copy()->addMinutes($session->duration);
         
         $conflict = \App\Models\ReservationSession::where('id', '!=', $session->id)
             ->where('current_game_id', $newGame->id)
             ->whereNotIn('status', ['ended', 'cancelled'])
-            ->whereHas('reservation', function ($q) use ($reservation, $session, $sessionEnd) {
+            ->whereHas('reservation', function ($q) use ($reservation, $sessionEnd, $startedAt) {
                 $q->where('date', $reservation->date)
                   ->where('start_time', '<', $sessionEnd->format('H:i:s'))
-                  ->where('end_time', '>', $session->started_at->format('H:i:s'));
+                  ->where('end_time', '>', $startedAt->format('H:i:s'));
             })
             ->exists();
 
@@ -167,6 +168,55 @@ class ReservationSessionController extends Controller
             ]
         ));
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Switched to {$newGame->name} successfully.",
+                'game' => $newGame->name,
+            ]);
+        }
+        
         return back()->with('success', "Switched to {$newGame->name} successfully.");
+    }
+
+    public function availableGames(Request $request, Reservation $reservation)
+    {
+        $session = $reservation->sessions()->where('status', 'active')->firstOrFail();
+        $currentPrice = (float) ($reservation->game->price ?? 0);
+        
+        $startedAt = \Carbon\Carbon::parse($session->started_at);
+        $sessionEnd = $startedAt->copy()->addMinutes($session->duration);
+        
+        $games = \App\Models\Game::whereIn('status', ['available', 'busy'])
+            ->get()
+            ->map(function ($game) use ($session, $sessionEnd, $startedAt, $reservation, $currentPrice) {
+                $conflict = \App\Models\ReservationSession::where('id', '!=', $session->id)
+                    ->where('current_game_id', $game->id)
+                    ->whereNotIn('status', ['ended', 'cancelled'])
+                    ->whereHas('reservation', function ($q) use ($reservation, $sessionEnd, $startedAt) {
+                        $q->where('date', $reservation->date)
+                          ->where('start_time', '<', $sessionEnd->format('H:i:s'))
+                          ->where('end_time', '>', $startedAt->format('H:i:s'));
+                    })
+                    ->exists();
+                
+                $priceDiff = (float) $game->price - $currentPrice;
+                
+                return [
+                    'id' => $game->id,
+                    'name' => $game->name,
+                    'price' => $game->price,
+                    'image' => $game->image,
+                    'available' => !$conflict,
+                    'current' => $session->current_game_id == $game->id,
+                    'price_difference' => $priceDiff,
+                ];
+            });
+        
+        return response()->json([
+            'current_game' => $session->currentGame?->name,
+            'current_price' => $currentPrice,
+            'games' => $games,
+        ]);
     }
 }
