@@ -16,11 +16,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('games/', [GameController::class, 'index'])->name('games.index');
-Route::get('games/{category}', [GameController::class, 'show'])->name('games.show');
-Route::get('categories/', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -37,8 +32,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{reservation}/delete', 'delete')->name('reservations.delete');
     });
 
-    Route::controller(ReservationSessionController::class)->prefix('my/sessions')->group(function () {
-        Route::get('/', 'mySessions')->name('sessions.my');
+    Route::controller(ReservationSessionController::class)->prefix('sessions')->group(function () {
+        Route::get('/my', 'mySessions')->name('sessions.my');
     });
 
 });
@@ -61,7 +56,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::delete('/{game}/delete', 'delete')->name('games.delete');
     });
 
-    Route::get('/reservations', [ReservationController::class, 'index']);
+    Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::patch('/reservations/{reservation}/status', [ReservationController::class, 'status'])->name('reservations.status');
 
     Route::controller(ReservationSessionController::class)->prefix('sessions')->group(function () {
@@ -82,5 +77,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 
 });
+
+Route::get('games/', [GameController::class, 'index'])->name('games.index');
+Route::get('games/{game}', [GameController::class, 'show'])->name('games.show');
+Route::get('categories/', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
 require __DIR__.'/auth.php';

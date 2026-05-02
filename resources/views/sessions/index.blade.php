@@ -72,7 +72,7 @@
                                     </div>
                                     <p class="text-slate-600 font-medium">This table is available</p>
                                     <p class="text-sm text-slate-400 mt-1">Ready for reservation</p>
-                                    <a href="{{ route('reservations.create') }}" class="mt-4 btn-primary inline-flex items-center gap-2">
+                                    <a href="{{ route('reservations.create') }}?tab={{ $table->id }}" class="mt-4 btn-primary inline-flex items-center gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                         </svg>

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Http\Requests\GameStoreRequest;
 use App\Http\Requests\GameUpdateRequest;
+use Illuminate\Http\Request;
+// use Illuminate\Support\Facades\Request;
 
 class GameController extends Controller
 {
@@ -13,7 +15,7 @@ class GameController extends Controller
      */
     public function index()
     {
-        $games = Game::all();
+        $games = Game::paginate(6);
 
         return view('games.index', compact('games'));
     }

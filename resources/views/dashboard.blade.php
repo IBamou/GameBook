@@ -1,14 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 class="font-semibold text-xl text-slate-900 dark:text-white leading-tight">{{ __('Dashboard') }}</h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">A polished control center for your games, reservations, and sessions.</p>
-            </div>
-            <a href="{{ route('games.index') }}" class="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500 transition">Browse games</a>
-        </div>
-    </x-slot>
-
     <div class="py-10">
         <div class="grid gap-6 xl:grid-cols-3">
             <div class="card-surface p-6">

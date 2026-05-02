@@ -6,6 +6,7 @@ use App\Http\Requests\ReservationStatusRequest;
 use App\Http\Requests\ReservationStoreRequest;
 use App\Http\Requests\ReservationUpdateRequest;
 use App\Models\Reservation;
+use Illuminate\Support\Facades\Request;
 
 class ReservationController extends Controller
 {
@@ -19,7 +20,7 @@ class ReservationController extends Controller
         return view('reservations.index', compact('reservations'));
     }
 
-/**
+    /**
      * Update Reservation Status
      */
     public function status(ReservationStatusRequest $request, Reservation $reservation)
@@ -30,6 +31,14 @@ class ReservationController extends Controller
         $reservation->cancelSessionIfCancelled();
 
         return back();
+    }
+
+    /**
+     * Create new Reservation
+     */
+    public function create()
+    {
+        return view('reservations.create');
     }
 
     /**

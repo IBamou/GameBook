@@ -55,6 +55,10 @@
                 </div>
             @endforelse
         </div>
+
+        <div class="mt-8">
+            {{ $games->links() }}
+        </div>
     </div>
 </div>
 @endsection

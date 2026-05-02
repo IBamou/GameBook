@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="py-10 sm:py-12">
@@ -23,7 +23,7 @@
                         <select name="category_id" class="form-input">
                             <option value="">Select category</option>
                             @foreach(\App\Models\Category::all() as $cat)
-                                <option value="{{ $cat->id }}" @selected(old('category_id') == $cat->id)>{{ $cat->name }}</option>
+                                <option value="{{ $cat->id }}"  @selected((request('cat') !== null ?  request('cat') == $cat->id : old('category_id') == $cat->id ))>{{ $cat->name }}</option>
                             @endforeach
                         </select>
                         @error('category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

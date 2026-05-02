@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\ReservationFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\ReservationSession;
 use Carbon\Carbon;
 
+#[Fillable(['user_id', 'table_id', 'game_id', 'date', 'start_time', 'end_time', 'spots', 'status', 'price'])]
 class Reservation extends Model
 {
     /** @use HasFactory<ReservationFactory> */
