@@ -5,15 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CategoryStoreRequest;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::paginate(6);
+        $search = $request->get('search');
+
+        $categories = Category::withCount('games')
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->paginate(6);
+
+        $categories->appends($request->query());
 
         return view('categories.index', compact('categories'));
     }

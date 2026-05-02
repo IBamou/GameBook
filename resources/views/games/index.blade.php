@@ -20,6 +20,28 @@
             @endauth
         </div>
 
+        <form method="GET" class="mb-6 flex flex-wrap gap-3 items-center">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search games..." 
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+            </div>
+            <select name="category" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                <option value="">All Categories</option>
+                @foreach(\App\Models\Category::all() as $cat)
+                    <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                @endforeach
+            </select>
+            <select name="status" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                <option value="">All Status</option>
+                <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
+                <option value="unavailable" {{ request('status') == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
+            </select>
+            <button type="submit" class="btn-secondary">Filter</button>
+            @if(request('search') || request('category') || request('status'))
+                <a href="{{ route('games.index') }}" class="text-sm text-slate-500 hover:text-slate-700">Clear</a>
+            @endif
+        </form>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @forelse($games as $game)
                 <a href="{{ route('games.show', $game) }}" class="card-hover group overflow-hidden flex flex-col">

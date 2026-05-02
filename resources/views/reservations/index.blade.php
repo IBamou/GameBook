@@ -10,6 +10,34 @@
             </div>
         </div>
 
+        <form method="GET" class="mb-6 flex flex-wrap gap-3 items-center">
+            <div class="min-w-[180px]">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by user name..." 
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+            </div>
+            <div class="min-w-[140px]">
+                <input type="date" name="date" value="{{ request('date') }}" 
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+            </div>
+            <select name="status" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                <option value="">All Status</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+            </select>
+            <select name="table" class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                <option value="">All Tables</option>
+                @foreach(\App\Models\Table::all() as $table)
+                    <option value="{{ $table->id }}" {{ request('table') == $table->id ? 'selected' : '' }}>Table {{ $table->reference }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn-secondary">Filter</button>
+            @if(request()->anyFilled(['search', 'status', 'date', 'table']))
+                <a href="{{ route('reservations.index') }}" class="text-sm text-slate-500 hover:text-slate-700">Clear</a>
+            @endif
+        </form>
+
         <div class="table-wrapper overflow-x-auto">
             <table class="min-w-full">
                 <thead class="table-head">
